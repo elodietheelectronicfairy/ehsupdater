@@ -1,0 +1,52 @@
+#!/bin/bash
+ver=$(cat version.txt)
+user=$(whoami)
+if [ "$user" != "root" ];
+then
+  echo -e "Oops you didnt run as root"
+  echo -e "I will switch to root for you but you will need to restart the installer"
+  echo -e "[*]Switching to root and exiting[*]"
+  sudo su
+  exit
+fi
+echo -e "[*]Do you want to check for updates? y/n[*]"
+read up
+if [ "$up" = "y" ];
+then
+  echo -e "[*]Looking for an updated version[*]"
+  git clone https://github.com/elodietheelectronicfairy/ehsupdater.git
+  cd ehsupdater
+  nver=$(cat versioncurrent.txt)
+  if [ "$ver" = "$nver" ];
+  then
+    echo -e "[*]No updates availiable[*]"
+  else
+    echo -e "[*]An updated version is availiable[*]"
+    echo -e "[*]Do you want to install it? y/n[*]"
+    read update
+    if [ "$update" = "y" ];
+    then
+    echo -e "[*]Installing version $nver over $ver[*]"
+    rm /usr/bin/ehs
+    rm /usr/bin/ehsupdate
+    chmod +x ehs
+    chmod +x ehsupdate
+    mv ehs /usr/bin
+    mv ehsupdate /usr/bin
+    echo -e "[*]Update finished[*]"
+    echo -e "\n[*]Installing new dependancies (if any)[*]"
+    newdep=$(dependanciesnew.txt)
+    apt-get update
+    apt-get upgrade -y
+    apt-get install $newdep -y
+    echo -e "\nTo view updated version of ehs open in a NEW tab"
+    sleep 3
+    clear
+    echo -e "[*]Exiting[*]"
+    exit
+  fi
+else
+  clear
+  echo -e "[*]Ok exiting[*]"
+  exit
+fi
